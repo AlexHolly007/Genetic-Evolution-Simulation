@@ -1,4 +1,3 @@
-from .main import Agent, Gene
 import random
 
 class Node:
@@ -11,7 +10,7 @@ class Node:
 
 # Different action nodes with unique behavior
 class Move_forward(Node):
-    def execute(self, agent: Agent):
+    def execute(self, agent):
         match agent.orientation:
             case 'L':
                 if agent.x != 0:
@@ -30,7 +29,7 @@ class Move_forward(Node):
                     agent.y -= 1
 
 class Turn_left(Node):
-    def execute(self, agent: Agent):
+    def execute(self, agent):
         match agent.orientation:
             case 'L':
                 agent.orientation = 'D'
@@ -45,7 +44,7 @@ class Turn_left(Node):
                 agent.orientation = 'R'
 
 class Turn_right(Node):
-    def execute(self, agent: Agent):
+    def execute(self, agent):
         match agent.orientation:
             case 'L':
                 agent.orientation = 'U'
@@ -60,7 +59,7 @@ class Turn_right(Node):
                 agent.orientation = 'L'
     
 class U_Turn(Node):
-    def execute(self, agent: Agent):
+    def execute(self, agent):
         match agent.orientation:
             case 'L':
                 agent.orientation = 'R'
@@ -77,21 +76,21 @@ class U_Turn(Node):
 
 #Different sensoring nodes
 class Sense_food_right(Node):
-    def execute(self, agent: Agent):
+    def execute(self, agent):
         return random.randint(1,10)
     
 class Sense_food_left(Node):
-    def execute(self, agent: Agent):
+    def execute(self, agent):
         return random.randint(1,10)
     
 class Sense_food_straight(Node):
-    def execute(self, agent: Agent):
+    def execute(self, agent):
         return random.randint(1,10)
     
 class Sense_wall_straight(Node):
-    def execute(self, agent: Agent):
+    def execute(self, agent):
         return random.randint(1,10)
     
 class Sense_proximity_to_agents(Node):
-    def execute(self, agent: Agent):
+    def execute(self, agent):
         return random.randint(1,10)
