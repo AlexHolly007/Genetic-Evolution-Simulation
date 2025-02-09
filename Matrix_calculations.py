@@ -1,5 +1,4 @@
 
-
 #INPUT: probability matrix to choose action,   action that is having its probability affected,   connection type(incr. or decr. prob of action),  strength - how much it affects. on a scale of 0 to 1
 def adjust_prob_matrix(matrix, action_code, connection_type, strength):
     for action_tuple in matrix:
