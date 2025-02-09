@@ -173,7 +173,8 @@ class Agent:
                     
                 
 
-    
+##TODO
+#Set up simple gene scramble and action function
         
 def main():
     pygame.init()
