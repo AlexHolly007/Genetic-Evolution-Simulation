@@ -27,7 +27,6 @@ class Move_forward(Node):
             case 'D':
                 if agent.y != 0:
                     agent.y -= 1
-
 class Turn_left(Node):
     def execute(self, agent):
         match agent.orientation:
@@ -77,20 +76,20 @@ class U_Turn(Node):
 #Different sensoring nodes
 class Sense_food_right(Node):
     def execute(self, agent):
-        return random.randint(1,10)
+        return random.randint(1,6)/10
     
 class Sense_food_left(Node):
     def execute(self, agent):
-        return random.randint(1,10)
+        return random.randint(1,6)/10
     
 class Sense_food_straight(Node):
     def execute(self, agent):
-        return random.randint(1,10)
+        return random.randint(1,6)/10
     
 class Sense_wall_straight(Node):
     def execute(self, agent):
-        return random.randint(1,10)
+        return random.randint(1,6)/10
     
 class Sense_proximity_to_agents(Node):
     def execute(self, agent):
-        return random.randint(1,10)
+        return random.randint(1,6)/10
