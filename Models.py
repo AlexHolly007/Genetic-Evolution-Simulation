@@ -60,7 +60,7 @@ class Gene:
         for i in range(num_genes):
             if id == i: #Skip itself
                 continue
-            self.connections[i] = ('E' * CONNECTION_NUCLEOTIDES_NUM, random.randint(1,10))
+            self.connections[i] = ['E' * CONNECTION_NUCLEOTIDES_NUM, random.randint(1,4)/10]
 
 
 
@@ -72,43 +72,60 @@ class Agent:
         self.y = 0 #0-500
         self.orientation = random.choice(['L','R','U','D']) #L,R,U,D for left,right,up,down facing
         self.num_nodes = num_nodes
+        self.last_run_action = None
 
         #initialize the genes of the agent. will start empty
-        self.genes = [Gene(id=idx, num_genes=num_nodes) for idx in enumerate(range(3))]
+        self.genes = [Gene(id=idx, num_genes=num_nodes) for idx in range(3)]
+
+    #Prints the genes of the agent
+    def print_genes(self):
+        for gene in self.genes:
+            print(f'Gene: {gene.id} - {gene.nucleotides} - {gene.connections}')
+            if gene.nucleotides in ACTION_DICT.keys():
+                print(f'    Gene function: {ACTION_DICT[gene.nucleotides]} - ', end='')
+            elif gene.nucleotides in SENSORY_DICT.keys():
+                print(f'    Gene function: {SENSORY_DICT[gene.nucleotides]} - ', end='')
+            else:
+                print('    Gene function: None - ', end='')
+
+            print('Connections: ', end='')
+            for connection in gene.connections.keys():
+                if gene.connections[connection][0] in CONNECTION_DICT.keys():
+                    print(f'({connection}: {CONNECTION_DICT[gene.connections[connection][0]]}) - ', end='')
+                else:
+                    print(f'({connection}: None) - ', end='')
+            print()
 
     
     #Will alter the amount of letters that the mutations is equal to. picked at random from this agents genes.
+    # max mutations = ACTION_NUCLEOTIDES_NUM * num_nodes + CONNECTION_NUCLEOTIDES_NUM * num_nodes * num_nodes-1 
+    # = 4 * 3   +   3 * 3 * 2   = 12 + 18 =   30
     def scramble_genes(self, mutations):
 
-        #i is the gene # from this agent
-        #j is the connection # for the gene to other genes (if this is the same as the gene selected, we will be changing the gene instead of a connection)
-        #k if a connection is choosen - k is the nucleotide choice for within the connection choosen
-        #z if a connection is not choosen - z is the nucletide choice for the action of the gene
-        nucleotides_to_change = random.choices(
-            [[i, j, k, z] for i in range(self.num_nodes) 
-            for j in [x for x in range(self.num_nodes)] 
-            for k in range(CONNECTION_NUCLEOTIDES_NUM)
-            for z in range(ACTION_NUCLEOTIDES_NUM)],
-            k=mutations #Amount of choices to make
-        )
+        #Make population that has a total of <max_mutations>(30) items, 1 for each possible mutation
+        #make a population for all possible connections
+        connection_population = [(gene.id, connection_id, connection_nucleotide_id) for gene in self.genes for connection_id in gene.connections.keys() for connection_nucleotide_id in range(CONNECTION_NUCLEOTIDES_NUM)]
+        #make a population for all possible genes
+        gene_population = [(gene.id, nucleotide_id) for gene in self.genes for nucleotide_id in range(ACTION_NUCLEOTIDES_NUM)] 
 
-        print(nucleotides_to_change)
+        #join the two populations, should be of length <max_mutations>
+        population = connection_population + gene_population     
+
+        # This will choose `mutations` unique items from the population.
+        nucleotides_to_change = random.sample(population, mutations)
 
         for nucleotide_indexs in nucleotides_to_change:
-            # When the connection index is the same as the gene index picked, it will change the genes
-            #       action/sensor nucleotides instead of the connections nucleotides
-            if nucleotide_indexs[0] == nucleotide_indexs[1]: 
+            # check the length of the nucleotide_indexs to see if its a gene or a connection thats being mutated
+            if len(nucleotide_indexs) == 2: #It is a gene 
                 #same string with 1 scrambled letter
                 self.genes[nucleotide_indexs[0]].nucleotides = \
-                    self.genes[nucleotide_indexs[0]].nucleotides[:nucleotide_indexs[3]] + random.choice(['A','G']) + self.genes[nucleotide_indexs[0]].nucleotides[nucleotide_indexs[3]:]
+                    self.genes[nucleotide_indexs[0]].nucleotides[:nucleotide_indexs[1]] + random.choice(['A','G']) + self.genes[nucleotide_indexs[0]].nucleotides[nucleotide_indexs[1] + 1:]
             
-            # this one is for scramebling a connection
+            # changing a connection nucleotide
             else:
-                #same string with 1 scrambled letter 
+                #same string with 1 scrambled letter
                 self.genes[nucleotide_indexs[0]].connections[nucleotide_indexs[1]][0] = \
-                    self.genes[nucleotide_indexs[0]].connections[nucleotide_indexs[1]][0][:nucleotide_indexs[2]] + random.choice(['A', 'G']) + self.genes[nucleotide_indexs[0]].connections[nucleotide_indexs[1]][0][nucleotide_indexs[2]:] 
-
-            print(nucleotide_indexs)
+                    self.genes[nucleotide_indexs[0]].connections[nucleotide_indexs[1]][0][:nucleotide_indexs[2]] + random.choice(['A', 'G']) + self.genes[nucleotide_indexs[0]].connections[nucleotide_indexs[1]][0][nucleotide_indexs[2] + 1:] 
 
 
     # Gives the agent a random location on the environment
@@ -129,8 +146,27 @@ class Agent:
                 for gene_id in gene.connections.keys():
 
                     #If a connection from the node being checked points to an action node
-                    if self.genes[gene_id].nucleotides in ACTION_DICT.keys():
+                    if self.genes[gene_id].nucleotides in ACTION_DICT.keys() and gene.connections[gene_id][0] in CONNECTION_DICT.keys():
                         #return action_code, connection type(1, -1, or 0), and connection strength
                         return_connections.append((self.genes[gene_id].nucleotides, CONNECTION_DICT[gene.connections[gene_id][0]], gene.connections[gene_id][1]))
         
         return return_connections
+
+
+    #INPUT the genetic gone for a sensory node, agent its being run with
+    #Description - will run the sensory node ability to get a sense strength
+    def run_sensory_node(self, sense_nucleotides):
+        return SENSORY_DICT[sense_nucleotides].execute(self)
+
+   #INPUT the genetic code for an action node, agent being run on
+   #Description - will run the action
+    def run_action_node(self, action_nucleotides):
+        return ACTION_DICT[action_nucleotides].execute(self)
+    
+    #Return a list of sensory nodes that are within the genes of agent
+    def check_for_sensory_nodes_in_genes(self):
+        return [gene.nucleotides for gene in self.genes if gene.nucleotides in SENSORY_DICT.keys()]
+    
+    #Return a list of action nodes that are within genes
+    def check_for_action_nodes_in_genes(self):
+        return [gene.nucleotides for gene in self.genes if gene.nucleotides in ACTION_DICT.keys()]
