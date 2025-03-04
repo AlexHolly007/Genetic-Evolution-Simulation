@@ -98,9 +98,10 @@ class Agent:
 
     
     #Will alter the amount of letters that the mutations is equal to. picked at random from this agents genes.
+    #type hints
     # max mutations = ACTION_NUCLEOTIDES_NUM * num_nodes + CONNECTION_NUCLEOTIDES_NUM * num_nodes * num_nodes-1 
     # = 4 * 3   +   3 * 3 * 2   = 12 + 18 =   30
-    def scramble_genes(self, mutations):
+    def scramble_genes(self, mutations: int):
 
         #Make population that has a total of <max_mutations>(30) items, 1 for each possible mutation
         #make a population for all possible connections

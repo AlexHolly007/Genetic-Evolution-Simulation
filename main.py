@@ -7,7 +7,7 @@ from Matrix_calculations import adjust_prob_matrix, choose_sequence
 #probabilites are adjusted per agent based on sensory nodes from genetics
 PROB_MATRIX_TEMPLATE = [
     #(PROBABILITY, ACTION CLASS GENETICS) 
-    [0.25, 'AAAA'],
+    [0.25, 'AAAA'], #move forward
     [0.25, 'AAAG'],
     [0.25, 'AAGA'],
     [0.25, 'AAGG']
